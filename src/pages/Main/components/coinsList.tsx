@@ -1,15 +1,16 @@
-import {postApi} from "../services/CoinService";
+import {postApi} from "../../../services/CoinService";
 import type {ICoin} from "../models/ICoin.ts";
 import {useEffect} from "react";
 import CoinRow from "../UI/CoinRow.tsx";
 import PaginationItem from "../UI/PaginationItem.tsx";
 import {createPages} from "../helpers/pageCreator"
-import { useAppSelector} from "../hooks/redux.ts";
+import {useAppDispatch, useAppSelector} from "../../../hooks/redux.ts";
+import {setMainCoin, setTotalCount} from "../../../store/reducers/coinSlice.ts";
 // import {setSearchTerm} from "../store/reducers/coinSlice";
 
 const CoinsList = () => {
-
-    const totalCount : number = 100;
+    const dispatch = useAppDispatch();
+    const totalCount : number = useAppSelector(state => state.coinReducer.totalCount);
     const perPage = 7;
     const pagesCount : number = Math.ceil(totalCount/perPage);
     const pages : number[] = [];
@@ -17,24 +18,58 @@ const CoinsList = () => {
     const currentPage : number =
         useAppSelector(state =>state.coinReducer.currentPage);
     createPages(pages, pagesCount, currentPage);
-    const { data: coins, isLoading } = postApi.useFetchAllСoinsQuery({
+    const { data: allCoins, isLoading } = postApi.useFetchAllСoinsQuery({
         limit: perPage,
         page: currentPage,
     });
-    const { data: searchData, isLoading: isLoadingSearch } = postApi.useSearchCoinsQuery(searchTerm, {
-        skip: searchTerm === "",
-    });
-
-    useEffect(() => {console.log(coins)}, [coins]);
     useEffect(() => {
-        console.log(searchData);
-    }, [searchData]);
+        if(allCoins){
+            if(allCoins[0].name === "Bitcoin"){
+
+                dispatch(setMainCoin(allCoins[0]));
+            }
+
+        }
+
+    }, [allCoins]);
+    const { data, isFetching } = postApi.useSearchCoinsQuery({
+        searchTerm: searchTerm,
+        per_page: perPage,
+        page: currentPage,
+        dispatch
+    }, {
+        skip: searchTerm.length < 2,
+    });
+    const coins = searchTerm.length >= 2 ? data : allCoins;
+
+    useEffect(() => {
+        if(searchTerm.length < 2 || searchTerm === ""){
+            dispatch(setTotalCount(100));
+        }
+    }, [searchTerm]);
+    // useEffect(() => {
+    //     if(coins && coins.length > 0){
+    //         dispatch(setMainCoin(coins[0]));
+    //     }
+    //
+    //
+    // }, [coins]);
+    // useEffect(() => {console.log(coins)}, [coins]);
+    // useEffect(() => {
+    //     console.log("Search" );
+    //     console.log(data);
+    // }, [data]);
+
+    useEffect(() => {
+        console.log(coins);
+    }, [coins]);
+
 
     // , error, isLoading, refetch
     return (
         <div  >
-            {isLoading &&
-                <div className="w-full h-96 flex justify-center items-center ">
+            {isLoading || isFetching ?
+                (<div className="w-full h-96 flex justify-center items-center ">
                     <div role="status">
                         <svg aria-hidden="true"
                              className="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
@@ -48,33 +83,36 @@ const CoinsList = () => {
                         </svg>
                         <span className="sr-only">Loading...</span>
                     </div>
+                </div>)
+                :
+                (<><div className="max-w-4xl mx-auto   bg-white shadow-md  ">
+                    <table className="min-w-full text-sm text-gray-700 overflow-y-auto h-[70%]">
+                        <thead className="border-y border-gray-200  text-gray-600 uppercase text-xs sticky top-8  z-10 bg-white ">
+                        <tr >
+                            <th className="px-6 py-3 text-left">Name</th>
+                            <th className="px-6 py-3 text-left">Price</th>
+                            <th className="px-6 py-3 text-left">24h</th>
+                            <th className="px-6 py-3 text-left">Market Cap</th>
+                            <th className="px-6 py-3 text-center">Favorite</th>
+                        </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+
+                        {coins && coins.map((coin: ICoin, i: number) =>
+                            <CoinRow key={i} Coin={coin}/>
+                        )}
+
+
+                        </tbody>
+                    </table>
                 </div>
+                <div
+                className="flex items-center justify-between  px-6 py-4 border-y border-white bg-white  text-sm text-gray-800 rounded-b-xl  shadow-sm">
+            {pages.map((page, i: number) => <PaginationItem num={page} key={i}/>)}
+
+</div></>)
             }
-            <div className="max-w-4xl mx-auto   bg-white shadow-md  overflow-hidden ">
-                <table className="min-w-full text-sm text-gray-700">
-                    <thead className="border-y border-gray-200 text-gray-600 uppercase text-xs">
-                    <tr >
-                        <th className="px-6 py-3 text-left">Name</th>
-                        <th className="px-6 py-3 text-left">Price</th>
-                        <th className="px-6 py-3 text-left">24h</th>
-                        <th className="px-6 py-3 text-left">Market Cap</th>
-                    </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
 
-                    {coins && coins.map((coin: ICoin, i: number) =>
-                        <CoinRow key={i} Coin={coin}/>
-                    )}
-
-
-                    </tbody>
-                </table>
-            </div>
-            <div
-                className="flex items-center justify-between px-6 py-4 border-y border-white bg-white  text-sm text-gray-800 rounded-b-xl  shadow-sm">
-                {pages.map((page, i: number) => <PaginationItem num={page} key={i}/>)}
-
-            </div>
         </div>
     );
 };

@@ -1,6 +1,6 @@
 import type {FC} from "react";
-import {useAppDispatch} from "../hooks/redux.ts";
-import {setCurrentPage} from "../store/reducers/coinSlice"
+import {useAppDispatch} from "../../../hooks/redux.ts";
+import {setCurrentPage} from "../../../store/reducers/coinSlice"
 
 interface Num{
     num: number

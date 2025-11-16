@@ -1,7 +1,7 @@
 // store.ts
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { postApi } from '../services/CoinService';
-import coinReducer from "./reducers/coinSlice"
+import { postApi } from '../services/CoinService.ts';
+import coinReducer from "./reducers/coinSlice.ts"
 // Комбінуємо ред'юсери
 const rootReducer = combineReducers({
     coinReducer,

@@ -1,12 +1,12 @@
-import {setSearchTerm} from "../store/reducers/coinSlice";
-import {useAppDispatch} from "../hooks/redux.ts";
+import {setSearchTerm} from "../../../store/reducers/coinSlice";
+import {useAppDispatch} from "../../../hooks/redux.ts";
 
 const Search = () => {
     const dispatch  = useAppDispatch();
     return (
 
 
-        <form className="mx-auto w-full">
+        <form className="mx-auto w-full sticky top-0 left-0 z-10">
             <div className="relative">
                 <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                     <svg

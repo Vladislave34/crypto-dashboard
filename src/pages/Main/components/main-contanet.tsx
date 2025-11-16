@@ -1,13 +1,13 @@
 
-import FavoriteCoin from "./favoriteCoin.tsx";
+import MainCoin from "./mainCoin.tsx";
 import ShowCoin from "./ShowCoin.tsx";
 
 
 const MainContanet = () => {
     return (
-        <div className="m-10 flex justify-between max-h-[80%] ">
+        <div className="m-10 flex justify-between h-[80%] ">
             <ShowCoin />
-            <FavoriteCoin />
+            <MainCoin />
         </div>
     );
 };
